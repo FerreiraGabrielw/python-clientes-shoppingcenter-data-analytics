@@ -30,10 +30,10 @@ Este projeto é uma **análise de dados de ponta a ponta (E2E)** focada no estud
 
 ## Como Visualizar a Análise Completa
 
-* **Online (HTML)**: Faça o download do arquivo `analise_clientes.html` da pasta `quarto/` e abra-o em seu navegador.
+* **Online (HTML)**: Faça o download do arquivo `1AnaliseDadosShoppingCenter.html` da pasta `quarto/` e abra-o em seu navegador.
 * **Jupyter Notebook**: Visualize o Jupyter Notebook diretamente no GitHub ou faça o download do arquivo `.ipynb` da pasta `notebooks/` e abra-o em seu ambiente Jupyter.
 * **Localmente (Quarto)**:
-    1.  Faça o download do arquivo `analise_clientes.qmd` da pasta `quarto/`.
+    1.  Faça o download do arquivo `1AnaliseDadosShoppingCenter.qmd` da pasta `quarto/`.
     2.  Certifique-se de ter o Quarto e Python com as bibliotecas necessárias instalados.
     3.  Abra o `.qmd` em um editor compatível (VS Code com extensão Quarto) e compile-o.
 
