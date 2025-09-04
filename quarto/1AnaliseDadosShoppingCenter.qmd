@@ -1,33 +1,33 @@
 ---
-title: "Projeto de Análise de Clientes para Shopping Center"
+title: "Customer Analysis Project for Shopping Center"
 author: "Gabriel Ferreira"
 date: "2024-09-18"
 format:
   html:
     page-layout: full
     code-fold: true
-    code-summary: "Mostrar Código"
+    code-summary: "Show Code"
     toc: false
     anchor-sections: false
 engine: jupytern
 jupyter: python3
 ---
-# Introdução
+# Introduction
 
-Este projeto foi realizado a partir de um conjunto de dados real, proveniente de um shopping center, com o objetivo principal de estudar as características e os padrões de compra de seus clientes. Através de uma análise de dados de ponta a ponta (E2E), desde o tratamento e limpeza iniciais até a criação de visualizações, buscando não apenas descrever o comportamento do consumidor, mas também fornecer insights acionáveis que podem orientar decisões estratégicas, vendas e gestão da experiência do cliente.
+This project was carried out using a real dataset from a shopping center, with the main objective of studying the characteristics and purchasing patterns of its customers. Through an end-to-end (E2E) data analysis, from initial cleaning and preparation to the creation of visualizations, the goal was not only to describe consumer behavior but also to provide actionable insights that can guide strategic decisions, sales, and customer experience management.
 
-A meta é transformar dados brutos em conhecimento estratégico, permitindo que o shopping center otimize suas operações, personalize suas ofertas e maximize o valor para cada cliente.  
+The goal is to transform raw data into strategic knowledge, enabling the shopping center to optimize its operations, personalize its offers, and maximize the value of each customer.  
 
-# Estrutura do Projeto
+# Project Structure
 
-O desenvolvimento deste projeto seguiu uma metodologia estruturada para garantir a precisão e confiabilidade dos insights extraídos, abrangendo desde a coleta e preparação dos dados até a avaliação e interpretação dos resultados. Cada fase, desde a extração dos dados até a interpretação das visualizações, foi executada com atenção aos detalhes e foco na maximização do valor analítico.
+The development of this project followed a structured methodology to ensure the accuracy and reliability of the extracted insights, covering everything from data collection and preparation to evaluation and interpretation of the results. Each phase, from data extraction to the interpretation of visualizations, was executed with attention to detail and focus on maximizing analytical value.
 
-## Coleta e Pré-processamento dos dados
+## Data Collection and Preprocessing
 
-A qualidade dos dados é o pilar de qualquer análise. Nesta fase, temos que garantir que o dataset estivesse impecável e pronto para o processamento.
+Data quality is the foundation of any analysis. At this stage, we ensured the dataset was clean and ready for processing.
 
-### Carregamento e Visão Inicial dos Dados
-- Fonte dos Dados: Dados colhidos de um shopping center em Singapura
+### Data Loading and Initial Overview
+- Data Source: Collected from a shopping center in Singapore
 
 ```{python}
 #| include: false
@@ -40,25 +40,26 @@ import warnings
 warnings.filterwarnings('ignore')
 ```
 
-O ponto de partida foi o carregamento do conjunto de dados dataset. A primeira informação 28 colunas, cobrindo uma vasta gama de informações sobre os clientes, desde dados demográficos e status civil até comportamentos de compra e interações com campanhas promocionais.
+The starting point was loading the dataset. It contained 28 columns, covering a wide range of information about customers, from demographic data and marital status to purchasing behaviors and interactions with promotional campaigns.
 
-###### Carrega o dataset + 5 primeiras linhas do df:
+###### Load dataset + first 5 rows:
 ```{python}
-df = pd.read_csv('dataset_shoppingcenter.csv')
+caminho_do_arquivo = '../data/dataset_shoppingcenter.csv'
+df = pd.read_csv(caminho_do_arquivo)
 df.head()
 ```
 
-### Análise Exploratória dos Dados e Limpeza
+### Exploratory Data Analysis and Cleaning
 
-###### Contagem de cada coluna df01:
+###### Column count df01:
 ```{python}
 df.info()
 ```
 
-Identificamos que a coluna Income (renda) estava formatada como um objeto (object) devido à presença de caracteres especiais como o cifrão ($) e vírgulas (,), para que pudéssemos realizar operações numéricas e análises estatísticas, então convertemos essa coluna para um tipo float e, adicionalmente, um espaço em branco inicial no nome da coluna foi corrigido para facilitar a manipulação.
-A coluna Dt_Customer (data de cadastro do cliente) também estava como object e não era reconhecida como um formato de data. A conversão para o tipo datetime é necessária para análises temporais, como a idade do cliente no momento do cadastro ou padrões de adesão ao longo do tempo.
+We identified that the column Income was formatted as an object due to special characters such as dollar signs ($) and commas (,). To enable numeric operations and statistical analyses, we converted this column to float. Additionally, a leading whitespace in the column name was fixed for easier handling.
+The Dt_Customer column (customer enrollment date) was also stored as an object and not recognized as a datetime. Conversion was necessary for temporal analyses, such as customer age at enrollment or sign-up trends over time.
 
-###### Ajuste nas colunas Income e Dt_Customer:
+###### Adjusting Income and Dt_Customer columns:
 ```{python}
 df.rename({' Income ' : 'Income'}, axis = 1, inplace = True)
 df['Income'] = df['Income'].str.replace('$', '')
@@ -66,103 +67,103 @@ df['Income'] = df['Income'].str.replace(',', '').astype(float)
 df['Dt_Customer'] = pd.to_datetime(df['Dt_Customer'])
 ```
 
-###### Verificando Valores Ausentes:
+###### Checking for Missing Values:
 ```{python}
 df.isnull().sum()
 ```
 
-Após a conversão para tipo numérico, a coluna Income ainda apresenta 24 valores ausentes. Para decidir a melhor estratégia de preenchimento (imputação) ou remoção, investigamos a distribuição estatística da variável
+After converting Income to numeric, 24 missing values remained. To determine the best imputation strategy, we investigated the statistical distribution of the variable.
 
-###### Resumo Estatístico da variável Income:
+###### Statistical Summary of Income:
 ```{python}
 df['Income'].describe()
 ```
 
-A análise revelou uma diferença significativa entre a média (52.247)e a mediana(51.381). Mais notavelmente, o valor máximo (666.666)extremamente distante do terceiroquartil (68.522), um forte indicativo da presença de outliers (valores atípicos). Esses valores extremos teriam um impacto desproporcional na média, tornando-a uma representação não confiável da tendência central dos dados.
+The analysis revealed a significant difference between mean (52,247) and median (51,381). Most notably, the maximum value (666,666) was extremely distant from the third quartile (68,522), a strong indication of outliers. Such extreme values disproportionately affect the mean, making it unreliable for central tendency.
 
-**Decisão**: Optamos por substituir os valores ausentes pela mediana da renda, visto que a mediana é uma medida de tendência central mais robusta e menos sensível a valores extremos, garantindo que a imputação não distorcesse a distribuição real da renda dos clientes e, consequentemente, a análise de perfil.
+Decision: We chose to replace missing values with the median income, as the median is more robust and less sensitive to outliers, ensuring imputation did not distort the real distribution of income.
 
-###### Substituindo Valores Ausentes pela Mediana na Variável Renda:
+###### Replacing Missing Values with Median in Income:
 ```{python}
 median_income = df['Income'].median()
 df['Income'].fillna(median_income, inplace=True)
 ```
-Embora tenhamos feito a imputação dos valores ausentes tenha com a mediana, a existência de valores extremos pode influenciar negativamente modelos e visualizações, por isso vamos analisar como esta distribuída a variável renda
+Although we imputed missing values using the median, the presence of extreme outliers could still negatively influence models and visualizations. We analyzed the distribution of income further.
 
-###### Distribuição da variável renda:
+###### Income variable distribution:
 ```{python}
 plt.figure(figsize = (6, 6))
-plt.title("Distribuição de Renda dos Clientes")
+plt.title("Customer Income Distribution")
 sns.boxplot(data = df['Income'], color = 'blue')
 ```
 
-A presença do outlier de $666.666 na renda era notória e, dada a magnitude do dataset e a singularidade desse ponto, a remoção direta desse outlier foi considerada apropriada para evitar ruídos e garantir que a análise refletisse a distribuição mais representativa da renda dos clientes.
+The $666,666 outlier stood out, and given the dataset size and its singularity, we removed it to reduce noise and improve representativeness.
 
-###### Removendo o outlier e visualizando novamente a variável:
+###### Removing the outlier and plotting again:
 ```{python}
 df = df[df['Income'] != 666666.0]
 plt.figure(figsize = (6, 6))
-plt.title("Distribuição de Renda dos Clientes (sem o outlier)")
+plt.title("Customer Income Distribution (without outlier)")
 sns.boxplot(data = df['Income'], color = 'blue')
 ```
 
-A visualização da distribuição da renda através de um boxplot, tanto antes quanto depois da remoção do outlier, comprovou a eficácia dessa intervenção, resultando em uma representação mais limpa, preservando o perfil dos clientes.
+Boxplots before and after confirmed the effectiveness of this intervention, resulting in a cleaner representation of customer income.
 
 
-### Engenharia de Atributos (Feature Engineering)
+### Feature Engineering
 
-A criação de novas variáveis, ou Feature Engineering, é um passo importante para enriquecer o dataset e extrair insights mais complexos e relevantes de variáveis que estão implicítas a partir das colunas existentes. Então foram construídas métricas que capturam informações sobre o perfil e o comportamento dos clientes.
+The creation of new variables, or Feature Engineering, is an important step to enrich the dataset and extract deeper insights. We engineered metrics to capture customer profiles and behaviors.
 
-**a) Idade do Cliente no Cadastro (Customer_Age_When_Enrolled)**
+**a) Customer Age at Enrollment (Customer_Age_When_Enrolled)**
 
-Para entender a faixa etária dos clientes no momento em que se cadastraram no shopping, uma nova coluna foi criada subtraindo o ano de nascimento (Year_Birth) do ano de cadastro (Dt_Customer). Esta métrica é importante para campanhas segmentadas por faixa etária, indicando o público-alvo principal.
+To understand age distribution at enrollment, we created a column by subtracting birth year (Year_Birth) from enrollment year (Dt_Customer). This metric supports age-targeted campaigns.
 
-###### Criando a feature Customer_Age_When_Enrolled:
+###### Creating Customer_Age_When_Enrolled:
 ```{python}
 df['Customer_Age_When_Enrolled'] = df['Dt_Customer'].dt.year - df['Year_Birth']
 ```
 
-**b) Gasto Total (Total_Spent)**
+**b) Total Spending (Total_Spent)**
 
-A divisão dos gastos em categorias de produtos (vinhos, frutas, carnes, peixes, doces e ouro) é informativa, mas uma métrica consolidada do "Gasto Total" oferece uma visão macro do valor de cada cliente para o shopping. Isso permite identificar clientes de alto valor e entender o poder de compra geral.
+While spending was divided across product categories (wine, fruits, meat, fish, sweets, gold), a consolidated "Total_Spent" metric provides a holistic view of customer value.
 
-###### Criando a feature Total_Spent:
+###### Creating Total_Spent:
 ```{python}
 df['Total_Spent'] = df[['MntWines','MntFruits','MntMeatProducts','MntFishProducts','MntSweetProducts','MntGoldProds']].sum(axis=1)
 ```
 
-**c) Total de Compras (Total_Purchases)**
+**c) Total Purchases (Total_Purchases)**
 
-Similar ao gasto total, a soma das diferentes modalidades de compra (promoções, web, catálogo e loja física) fornece uma métrica unificada da frequência e engajamento do cliente com o shopping.
+Similarly, summing purchases across different channels (promotions, web, catalog, in-store) provided a unified measure of engagement.
 
-###### Criando a feature Total_Purchases:
+###### Total Purchases (Total_Purchases):
 ```{python}
 df['Total_Purchases'] = df[['NumDealsPurchases','NumWebPurchases','NumStorePurchases','NumCatalogPurchases']].sum(axis=1)
 ```
 
-**d) Presença de Crianças e Adolescentes em Casa (Kids_Teen_at_home)**
+**d) Kids and Teens at Home (Kids_Teen_at_home)**
 
-A união das informações sobre Kidhome (crianças em casa) e Teenhome (adolescentes em casa) em uma única variável simplifica a análise e permite identificar clientes com responsabilidades familiares, um fator que pode influenciar significativamente os padrões de compra (ex: busca por produtos para família, entretenimento infantil, etc.).
+We combined Kidhome and Teenhome into one variable to simplify analysis and identify households with dependents, which may impact shopping patterns.
 
-###### Criando a feature Kids_Teen_at_home:
+###### Creating Kids_Teen_at_home:
 ```{python}
 df['Kids_Teen_at_home'] = df[['Kidhome','Teenhome']].sum(axis=1)
 ```
 
-#### Limpeza de Variáveis Originais
+#### Cleaning Original Variables
 
-Após a criação das features agregadas, as colunas originais Kidhome e Teenhome foram removidas para evitar redundância e simplificar o dataset, mantendo apenas as variáveis mais informativas para a análise subsequente.
+After aggregation, we dropped Kidhome and Teenhome to avoid redundancy.
 
-###### Removendo colunas originais:
+###### Dropping original columns:
 ```{python}
 df = df.drop(['Kidhome', 'Teenhome'], axis = 1)
 ```
 
-### Re-verificação e Tratamentos de Outliers com IQR
+### Outlier Re-check with IQR
 
-Para garantir a qualidade dos novos atributos e das colunas já existentes, foi realizada uma nova verificação de outliers utilizando o método do Intervalo Interquartil (IQR) para as features mais relevantes para a análise (Customer_Age_When_Enrolled, Total_Spent, Total_Purchases, Kids_Teen_at_home). A régua de 2 vezes o IQR foi aplicado para uma detecção mais sensível.
+To ensure the quality of the new attributes and existing columns, a new outlier verification was performed using the Interquartile Range (IQR) method for the most relevant features for the analysis (Customer_Age_When_Enrolled, Total_Spent, Total_Purchases, Kids_Teen_at_home). The 2 times IQR rule was applied for a more sensitive detection.
 
-###### Definindo colunas de interesse, criando a função e aplicando nas colunas definidas para identificação de outliers:
+###### Defining columns of interest, creating the function and applying it to the defined columns for outlier identification:
 ```{python}
 # Colunas de interesse
 colunas = ['Customer_Age_When_Enrolled', 'Total_Spent', 'Total_Purchases', 'Kids_Teen_at_home']
@@ -187,11 +188,11 @@ for coluna in colunas:
     print(f'{coluna}: {res["outliers"].count()} outliers ({100*res["outliers"].count()/df.shape[0]:.2f}%)')
 ```
 
-Foi constatado que apenas 3 outliers persistiam na variável Customer_Age_When_Enrolled, representando um percentual muito baixo (0.13%) do dataset.
+It was found that only 3 outliers persisted in the Customer_Age_When_Enrolled variable, representing a very low percentage (0.13%) of the dataset.
 
-Para melhor visualização vamos analisar o boxplot dessas variáveis:
+For better visualization, let's analyze the boxplot of these variables:
 
-###### Boxplot das variáveis de interesse:
+###### Boxplot of variables of interest:
 ```{python}
 plt.figure(figsize=(12,6))
 for i, coluna in enumerate(colunas):
@@ -202,7 +203,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-###### Identificação dos outliers encontrados:
+###### Identification of found outliers:
 ```{python}
 for coluna in colunas:
     res = detectar_outliers_iqr(df[coluna])
@@ -212,54 +213,54 @@ for coluna in colunas:
         print(outliers)
 ```
 
-Esses valores extremamente atípicos (idades como 113, 114 e 121 anos, provavelmente erros de registro) foram removidos para evitar qualquer ruído ou distorção em futuras análises de idade, que são cruciais para a segmentação de clientes.
+These extremely atypical values (ages like 113, 114, and 121 years, likely registration errors) were removed to avoid any noise or distortion in future age analyses, which are crucial for customer segmentation.
 
-###### Removendo os valores extremos da variável:
+###### Removing extreme values from the variable:
 ```{python}
 df = df[df['Customer_Age_When_Enrolled'] != 113]
 df = df[df['Customer_Age_When_Enrolled'] != 114]
 df = df[df['Customer_Age_When_Enrolled'] != 121]
 ```
 
-**Verificação de Duplicatas e Estrutura Final do Dataset**
+**Duplicate Check and Final Dataset Structure**
 
-Antes de prosseguir, vamos realizar uma verificação final de registros duplicados
+Duplicate Check and Final Dataset Structure
 
-###### Verificando a presença de valores duplicados:
+###### Checking for duplicate values:
 ```{python}
 df.duplicated().sum()
 ```
 
-###### Verificação do dataset após a limpeza e criação de novas features:
+###### Dataset verification after cleaning and creating new features:
 ```{python}
 df.info()
 ```
 
-O dataset resultante, com 2.236 linhas e 30 colunas, está agora limpo, mais completo com as novas features e pronto para a fase de análise exploratória.
+The resulting dataset, with 2,236 rows and 30 columns, is now clean, more complete with the new features, and ready for the exploratory analysis phase.
 
 
-## Análise Exploratória dos Dados e Visualizações de Insights
+## Exploratory Data Analysis and Insight Visualizations
 
-### Análise da Idade dos Clientes:
+### Customer Age Analysis:
 ```{python}
 plt.figure(figsize = (6, 6))
-plt.title("Distribuição da Idade dos Clientes")
+plt.title("Customer Age Distribution")
 sns.violinplot(data = df['Customer_Age_When_Enrolled'], color = 'purple')
 ```
 
-A distribuição da idade dos clientes, visualizada através de um violin plot, revelou uma característica demográfica marcante: a maioria dos clientes concentra-se na faixa etária dos 35 aos 45 anos. Este dado é de suma importância, ele aponta para o principal nicho de mercado do shopping, indicando que as estratégias de marketing, a seleção de produtos e serviços, e até mesmo os eventos promocionais, devem ser direcionados para atender às necessidades e preferências desse grupo demográfico específico. Clientes nesta faixa etária geralmente possuem maior poder de compra e estabilidade financeira, sendo um público-alvo altamente valioso.
+The distribution of customer ages, visualized through a violin plot, revealed a striking demographic characteristic: the majority of customers are concentrated in the 35 to 45 age group. This data is of utmost importance, as it points to the shopping center's main market niche, indicating that marketing strategies, product and service selection, and even promotional events should be directed to meet the needs and preferences of this specific demographic group. Customers in this age range generally have greater purchasing power and financial stability, making them a highly valuable target audience.
 
-### Distribuição por Nível de Escolaridade:
+### Distribution by Education Level:
 ```{python}
 education_counts = df['Education'].value_counts()
 plt.figure(figsize = (14, 8))
-plt.title("Distribuição da Clientes por Nível de Escolaridade")
+plt.title("Customer Distribution by Education Level")
 sns.countplot(x = df['Education'], palette = 'rocket_r')
 ```
 
-A análise da escolaridade dos clientes, através de um count plot, destacou a predominância de clientes com Graduação, seguidos por aqueles com PhD e Mestrado. A minoria detém apenas o nível básico de escolaridade. Este padrão educacional sugere um perfil de cliente que valoriza qualidade, talvez com maior acesso à informação e poder de decisão sobre suas compras. Compreender essa característica pode influenciar a comunicação, o tipo de lojas e serviços oferecidos, e a abordagem de vendas, que pode ser mais sofisticada e focada em valor.
+The analysis of customer education levels, through a count plot, highlighted the predominance of customers with Bachelor's degrees, followed by those with PhDs and Master's degrees. A minority holds only a basic education level. This educational pattern suggests a customer profile that values quality, perhaps with greater access to information and decision-making power regarding their purchases. Understanding this characteristic can influence communication, the type of stores and services offered, and the sales approach, which can be more sophisticated and value-focused.
 
-### Perfil por Estado Civil:
+### Profile by Marital Status:
 ```{python}
 # Criando um df para armazernar a contagem de cada tipo de estado civil
 estado_civil = df['Marital_Status'].value_counts().to_frame('Count')
@@ -273,65 +274,64 @@ plt.pie(estado_civil['Count'],
         autopct = '%1.1f%%')
 plt.show()
 ```
-A distribuição do estado civil, ilustrada por um pie chart, revelou que a maior parte dos clientes é casada ou vive junto (Together), seguidos pelos solteiros. A predominância de casais sugere que muitas decisões de compra podem ser influenciadas por dinâmicas familiares. Isso pode abrir oportunidades para promoções e eventos direcionados a casais ou famílias, bem como para a oferta de produtos e serviços que atendam a múltiplos membros do lar.
+The distribution of marital status, illustrated by a pie chart, revealed that most customers are married or living together, followed by single individuals. The predominance of couples suggests that many purchasing decisions may be influenced by family dynamics. This could open opportunities for promotions and events aimed at couples or families, as well as offering products and services that cater to multiple household members.
 
-### Distribuição de Renda e Padrões de Gasto:
+### Income Distribution and Spending Patterns:
 ```{python}
 df = df[df['Income'] < 200000]
 plt.figure(figsize = (12,7))
 sns.distplot(df['Income'], color = 'magenta')
-plt.xlabel('Salario')
-plt.ylabel('Densidade')
+plt.xlabel('Salary')
+plt.ylabel('Density')
 plt.show()
 ```
+The analysis of income distribution, through a distplot, confirmed that the vast majority of customers have an income around 50,000. Although the distribution is approximately normal,some customers have incomes above 150,000. This concentration indicates a public with medium-to-high purchasing power, who may be sensitive to value propositions but also seek products and services that justify the investment. Higher-income customers, though fewer in number, represent a high-potential segment for premium products and services.
 
-A análise da distribuição de renda, através de um distplot, confirmou que a grande maioria dos clientes possui renda em torno de $50.000. Embora a distribuição seja aproximadamente normal, alguns clientes apresentam renda superiora $150.000. Esta concentração indica um público com um poder de compra mediano-alto, que pode ser sensível a propostas de valor, mas também busca produtos e serviços que justifiquem o investimento. Os clientes de renda mais elevada, embora em menor número, representam um segmento de alto potencial para produtos e serviços premium.
-
-###  Relação entre Renda e Escolaridade:
+###  Relationship between Income and Education:
 ```{python}
 sns.set_palette('rocket')
 plt.figure(figsize = (12, 7))
 sns.violinplot(y = df['Income'], x = df['Education'])
-plt.xlabel('Nível Educacional')
-plt.ylabel('Salario')
+plt.xlabel('Educational Level')
+plt.ylabel('Salary')
 plt.show()
 ```
 
-A relação entre renda e escolaridade, explorada por um violin plot, validou uma tendência comum: quanto maior o nível de escolaridade, maior a renda. Esta correlação reforça o perfil do cliente como sendo melhor educado com boa capacidade financeira. Lojas e marcas que alinharem seus produtos e sua comunicação a um público intelectualizado e com aspirações de qualidade se beneficiarão mais nesse ambiente.
+The relationship between income and education, explored by a violin plot, validated a common trend: the higher the education level, the higher the income. This correlation reinforces the customer profile as being well-educated with good financial capacity. Stores and brands that align their products and communication with an intellectualized public with aspirations for quality will benefit more in this environment.
 
-###  Relação entre Renda e Gastos com Produtos de Ouro:
+###  Relationship between Income and Spending on Gold Products:
 ```{python}
 plt.figure(figsize = (12, 7))
 sns.regplot(x = df['Income'], y = df['MntGoldProds'], color = 'green')
-plt.xlabel('Salario')
-plt.ylabel('Gasto com Produtos de Ouro')
+plt.xlabel('Salary')
+plt.ylabel('Spending on Gold Products')
 plt.show()
 ```
 
-A relação entre renda e gastos com produtos de ouro, visualizada por um regplot, demonstrou uma clara tendência positiva: clientes com maior renda tendem a gastar mais em produtos de ouro. Este é um indicador interessante do poder aquisitivo e do gosto dos clientes. Ouro e outros produtos de alto valor agregado podem ser promovidos de forma mais eficaz para o segmento de maior renda, talvez através de experiências de compra exclusivas ou programas de fidelidade diferenciados.
+The relationship between income and spending on gold products, visualized by a regplot, showed a clear positive trend: customers with higher incomes tend to spend more on gold products. This is an interesting indicator of customer purchasing power and taste. Gold and other high-value-added products can be promoted more effectively to the higher-income segment, perhaps through exclusive shopping experiences or differentiated loyalty programs.
 
-###  Relação entre Renda e Gasto Total em Compras:
+###  Relationship between Income and Total Spending on Purchases:
 ```{python}
 plt.figure(figsize = (12, 7))
 sns.regplot(x = df['Income'], y = df['Total_Spent'], color = 'red')
-plt.xlabel('Salario')
-plt.ylabel('Gasto Total em Compras')
+plt.xlabel('Salary')
+plt.ylabel('Total Spending on Purchases')
 plt.show()
 ```
 
-Ainda mais importante, a análise da relação entre renda e gasto total em compras, também através de um regplot, confirmou uma relação positiva robusta: clientes com maior renda naturalmente contribuem com um volume maior de gastos no shopping. Este é um dos insights mais fundamentais, reforça a importância de atrair e reter clientes de alta renda, pois eles são a espinha dorsal do faturamento. Estratégias que visam aumentar a renda disponível ou a percepção de valor para esses clientes podem ter um impacto direto e significativo nos resultados financeiros.
+Even more importantly, the analysis of the relationship between income and total spending on purchases, also through a regplot, confirmed a robust positive relationship: customers with higher incomes naturally contribute a larger volume of spending at the shopping center. This is one of the most fundamental insights, reinforcing the importance of attracting and retaining high-income customers, as they are the backbone of revenue. Strategies aimed at increasing disposable income or the perceived value for these customers can have a direct and significant impact on financial results.
 
-###  Idade dos Clientes na Data de Cadastro:
+###  Customer Age at Enrollment Date:
 ```{python}
 plt.figure(figsize = (7, 5))
 sns.distplot(df['Customer_Age_When_Enrolled'], color = 'brown')
-plt.xlabel('Idade do Cliente na Data do Cadastro')
-plt.ylabel('Densidade')
+plt.xlabel('Customer Age at Enrollment Date')
+plt.ylabel('Density')
 plt.show()
 ```
-A distribuição da idade dos clientes na data de cadastro, um distplot, reiterou a concentração de clientes na faixa dos 40 anos. Isso solidifica a ideia de que o shopping tem um forte apelo para um público mais maduro e estabelecido, consolidando um nicho de mercado importante e consistente. A comunicação e as ofertas devem ressoar com os interesses e o estilo de vida dessa demografia.
+The distribution of customer age at the registration date, a distplot, reiterated the concentration of customers in their 40s. This solidifies the idea that the shopping center has a strong appeal to a more mature and established audience, consolidating an important and consistent market niche. Communication and offers should resonate with the interests and lifestyle of this demographic.
 
-###  Distribuição de Clientes por País de Origem:
+###  Customer Distribution by Country of Origin:
 ```{python}
 plt.figure(figsize=(12, 6))
 sns.countplot(
@@ -340,23 +340,23 @@ sns.countplot(
     palette='icefire_r',
     order=df['Country'].value_counts().index
 )
-plt.xlabel('País', fontsize=12)
-plt.ylabel('Número de Clientes', fontsize=12)
+plt.xlabel('Country', fontsize=12)
+plt.ylabel('Number of Customers', fontsize=12)
 plt.tight_layout()
 plt.show()
 ```
-A análise da distribuição de clientes por país, utilizando um countplot, revelou uma clara concentração de clientes no país de origem do dataset, Singapura, seguido por Arábia Saudita e Canadá. A dominância de Singapura é esperada e reforça a base local do shopping. A presença significativa de clientes da Arábia Saudita e Canadá indica uma possível clientela internacional ou de alto poder aquisitivo que pode estar visitando a região. Isso abre caminho para estratégias de turismo de compras e parcerias com agências de viagem, ou mesmo a adaptação de ofertas para culturas específicas.
+The analysis of customer distribution by country, using a countplot, revealed a clear concentration of customers in the dataset's country of origin, Singapore, followed by Saudi Arabia and Canada. Singapore's dominance is expected and reinforces the shopping center's local base. The significant presence of customers from Saudi Arabia and Canada indicates a potential international or high-income clientele who may be visiting the region. This opens the way for shopping tourism strategies and partnerships with travel agencies, or even adapting offers for specific cultures.
 
-###  Relação entre País de Origem e Total de Compras:
+###  Relationship between Country of Origin and Total Purchases:
 ```{python}
 plt.figure(figsize = (12, 7))
 sns.violinplot(x = df['Country'], y = df['Total_Purchases'], palette = 'coolwarm')
 plt.show()
 ```
 
-Um violin plot comparando o país de origem com o total de compras mostrou que, em geral, os países apresentam um comportamento de compra similar. No entanto, houve exceções notáveis: os Estados Unidos apresentaram alguns clientes com valores de compra significativamente mais altos, enquanto o México exibiu um comportamento distintamente diferente dos demais. Isso sugere que, embora o perfil médio de compra seja consistente, há nichos de mercado em países específicos, como os clientes "super compradores" dos EUA, que merecem atenção especial. Para o México, um estudo mais aprofundado do porquê de seu comportamento divergente poderia revelar oportunidades ou desafios específicos.
+A violin plot comparing the country of origin with total purchases showed that, in general, countries exhibit similar purchasing behavior. However, there were notable exceptions: the United States showed some customers with significantly higher purchase values, while Mexico displayed distinctly different behavior from the others. This suggests that, although the average purchasing profile is consistent, there are market niches in specific countries, such as the "super buyers" from the USA, who deserve special attention. For Mexico, a more in-depth study of why its behavior diverges could reveal specific opportunities or challenges.
 
-###  Agrupamento do Gasto Total por País:
+###  Grouping of Total Spending by Country:
 ```{python}
 pm = df[['Total_Purchases', 'Country']].groupby(['Country']).agg([sum])
 sns.set_palette('Spectral')
@@ -371,32 +371,36 @@ plt.pie(
 plt.tight_layout()
 plt.show()
 ```
-A análise do gasto total agregado por país, através de um pie chart, confirmou o que já era intuído: a maioria do faturamento provém de Singapura, seguida pela Arábia Saudita, que juntas respondem por quase 55% do total em compras. Essa concentração de valor em dois países reforça a necessidade de focar os esforços de retenção e engajamento nesses mercados primários. Estratégias personalizadas e campanhas de fidelidade para clientes de Singapura e Arábia Saudita são cruciais para a saúde financeira do shopping.
+The analysis of total aggregated spending by country, through a pie chart, confirmed what was already intuitive: the majority of revenue comes from Singapore, followed by Saudi Arabia, which together account for almost 55% of total purchases. This concentration of value in two countries reinforces the need to focus retention and engagement efforts on these primary markets. Personalized strategies and loyalty campaigns for customers from Singapore and Saudi Arabia are crucial for the shopping center's financial health.
 
-###  Agrupamento do Gasto Total por País:
+###  Customer Registrations by Month:
 ```{python}
 cadastros_mes = df['Dt_Customer'].dt.month.value_counts().sort_index()
-meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+meses = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 cores = sns.color_palette("Spectral", len(meses))
 plt.figure(figsize=(10,6))
 plt.bar(meses, cadastros_mes, color=cores)
-plt.xlabel('Mês')
-plt.ylabel('Cadastros')
+plt.xlabel('Month')
+plt.ylabel('Registrations')
 plt.tight_layout()
 plt.show()
 ```
-A distribuição dos cadastros de clientes ao longo dos meses do ano, apresentada em um bar chart, revelou que o processo de aquisição é relativamente bem distribuído. Houve uma leve baixa nos meses de Junho e Julho, o que pode ser sazonal ou indicar oportunidades para campanhas de aquisição nesses períodos. A estabilidade nos cadastros mensais é um bom sinal. As leves quedas em Junho e Julho podem ser alvo de ações de marketing específicas para impulsionar a aquisição durante esses meses, talvez com promoções exclusivas para novos cadastros ou eventos temáticos
+The distribution of customer registrations throughout the months of the year, presented in a bar chart, revealed that the acquisition process is relatively well distributed. There was a slight dip in June and July, which could be seasonal or indicate opportunities for acquisition campaigns during these periods. The stability in monthly registrations is a good sign. The slight declines in June and July could be targets for specific marketing actions to boost acquisition during these months, perhaps with exclusive promotions for new registrations or themed events.
 
-## Conclusão
+## Conclusion
 
-Esta análise do perfil dos clientes do shopping center revelou insights cruciais que podem guiar futuras estratégias de negócios. Ao compreender quem são os clientes, de onde vêm, qual seu poder aquisitivo e seus hábitos de compra, o shopping pode otimizar significativamente suas operações.
+This analysis of the shopping center's customer profile revealed crucial insights that can guide future business strategies. By understanding who the customers are, where they come from, their purchasing power, and their spending habits, the shopping center can significantly optimize its operations.
 
-### Principais Insights do Projeto:
+### Key Project Insights:
 
-- Público-Alvo Definido: O shopping atrai predominantemente um público adulto, com idade entre 35 e 45 anos, com alta escolaridade (Graduação, PhD, Mestre) e majoritariamente casado ou em união estável. Este é o seu core business e deve ser o foco principal.
-- Poder de Compra Consistente: A maioria dos clientes possui renda concentrada em torno de $50.000, com uma clara correlação positiva entre renda, escolaridade e gastos totais (incluindo produtos de alto valor como ouro). Isso valida a estratégia de focar em um público que busca qualidade e tem capacidade de investimento.
-- Base de Clientes Geográfica: Embora diversificada, a base de clientes é majoritariamente local (Singapura) com uma notável contribuição da Arábia Saudita e Canadá. Isso sugere oportunidades para otimizar estratégias tanto para o mercado doméstico quanto para o turismo de compras.
-- Comportamentos Específicos por País: A identificação de clientes de alto gasto nos EUA e um padrão diferente no México aponta para a necessidade de abordagens segmentadas por país para maximizar o retorno.
-- Estabilidade na Aquisição: Os cadastros de clientes são bem distribuídos ao longo do ano, com pequenas quedas em Junho e Julho, que podem ser oportunidades para campanhas de aquisição direcionadas.
+- Defined Target Audience: The shopping center predominantly attracts an adult audience, aged between 35 and 45, with high education (Bachelor's, PhD, Master's) and mostly married or in a stable union. This is its core business and should be the main focus.
 
-Este projeto demonstra como uma análise de dados bem executada pode ir além dos números, fornecendo uma base sólida para a tomada de decisões estratégicas que impulsionam o crescimento e a satisfação do cliente em um ambiente de varejo altamente competitivo. É uma prova do poder da Ciência de Dados em transformar informações em inteligência de negócios acionável.
+- Consistent Purchasing Power: The majority of customers have income concentrated around $50,000, with a clear positive correlation between income, education, and total spending (including high-value products like gold). This validates the strategy of focusing on an audience that seeks quality and has investment capacity.
+
+- Geographic Customer Base: Although diversified, the customer base is predominantly local (Singapore) with a notable contribution from Saudi Arabia and Canada. This suggests opportunities to optimize strategies for both the domestic market and shopping tourism.
+
+- Country-Specific Behaviors: The identification of high-spending customers in the USA and a different pattern in Mexico points to the need for country-segmented approaches to maximize returns.
+
+- Acquisition Stability: Customer registrations are well distributed throughout the year, with small dips in June and July, which can be opportunities for targeted acquisition campaigns.
+
+Ultimately, this project highlights how Data Science bridges the gap between raw data and business strategy, empowering retail organizations to remain competitive and customer-centric.”
